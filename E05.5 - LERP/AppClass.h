@@ -14,7 +14,10 @@ class Application
 {
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
 	std::vector<vector3> m_stopsList;
+	int stopsListPos = 0;
 	Simplex::Model* m_pModel = nullptr;
+	vector3 v3CurrentPos = vector3(0, 0, 0);
+	double lerpSpeed = 0.03;
 private:
 	static ImGuiObject gui; //GUI object
 	
