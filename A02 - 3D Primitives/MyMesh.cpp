@@ -470,6 +470,7 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 			float x = cos(constant * j) * a_fRadius;
 			float y = sin(constant * j) * a_fRadius;
 			float z = -a_fRadius + (a_fRadius * 2 / a_nSubdivisions * i);
+			//z coordinate should not be evenly scaled. z should be spaced out more towards the center and less at the ends.
 			float hypotenuse = sqrtf(pow(x, 2) + pow(y, 2) + pow(z, 2));
 			x /= hypotenuse;
 			y /= hypotenuse;
