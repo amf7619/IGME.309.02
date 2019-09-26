@@ -275,9 +275,28 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	float halfHeight = a_fHeight / 2;
+
+	// the constant for finding a point on the circle.
+	const float constant = PI * 2 / a_nSubdivisions;
+
+	std::vector<vector3> bottomPoints;
+	vector3 topPoint = vector3(0, 0, halfHeight);
+
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		//points are created counterclockwise from the origin
+		bottomPoints.push_back(vector3(cos(constant * i) * a_fRadius, sin(constant * i) * a_fRadius, -halfHeight));
+	}
+
+	for (int i = 0; i < a_nSubdivisions - 1; i++)
+	{
+		AddTri(vector3(0, 0, -halfHeight), bottomPoints[i + 1], bottomPoints[i]);
+		AddTri(bottomPoints[i], bottomPoints[i + 1], topPoint);
+	}
+
+	AddTri(vector3(0, 0, -halfHeight), bottomPoints[0], bottomPoints[a_nSubdivisions - 1]);
+	AddTri(bottomPoints[a_nSubdivisions - 1], bottomPoints[0], topPoint);
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -298,10 +317,32 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 
 	Release();
 	Init();
+	
+	float halfHeight = a_fHeight / 2;
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	// the constant for finding a point on the circle.
+	const float constant = PI * 2 / a_nSubdivisions;
+
+	std::vector<vector3> bottomPoints;
+	std::vector<vector3> topPoints;
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		//points are created counterclockwise from the origin
+		bottomPoints.push_back(vector3(cos(constant * i) * a_fRadius, sin(constant * i) * a_fRadius, -halfHeight));
+		topPoints.push_back(vector3(cos(constant * i) * a_fRadius, sin(constant * i) * a_fRadius, halfHeight));
+	}
+
+	for (int i = 0; i < a_nSubdivisions - 1; i++)
+	{
+		AddTri(vector3(0, 0, halfHeight), topPoints[i], topPoints[i + 1]);
+		AddTri(vector3(0, 0, -halfHeight), bottomPoints[i + 1], bottomPoints[i]);
+		AddQuad(bottomPoints[i], bottomPoints[i + 1], topPoints[i], topPoints[i + 1]);
+	}
+
+	AddTri(vector3(0, 0, halfHeight), topPoints[a_nSubdivisions - 1], topPoints[0]);
+	AddTri(vector3(0, 0, -halfHeight), bottomPoints[0], bottomPoints[a_nSubdivisions - 1]);
+	AddQuad(bottomPoints[a_nSubdivisions - 1], bottomPoints[0], topPoints[a_nSubdivisions - 1], topPoints[0]);
+
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -329,9 +370,35 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	float halfHeight = a_fHeight / 2;
+
+	// the constant for finding a point on the circle.
+	const float constant = PI * 2 / a_nSubdivisions;
+
+	std::vector<vector3> outerBottom;
+	std::vector<vector3> outerTop;
+	std::vector<vector3> innerBottom;
+	std::vector<vector3> innerTop;
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		//points are created counterclockwise from the origin
+		outerBottom.push_back(vector3(cos(constant * i) * a_fOuterRadius, sin(constant * i) * a_fOuterRadius, -halfHeight));
+		outerTop.push_back(vector3(cos(constant * i) * a_fOuterRadius, sin(constant * i) * a_fOuterRadius, halfHeight));
+		innerBottom.push_back(vector3(cos(constant * i) * a_fInnerRadius, sin(constant * i) * a_fInnerRadius, -halfHeight));
+		innerTop.push_back(vector3(cos(constant * i) * a_fInnerRadius, sin(constant * i) * a_fInnerRadius, halfHeight));
+	}
+
+	for (int i = 0; i < a_nSubdivisions - 1; i++)
+	{
+		AddQuad(outerTop[i], outerTop[i + 1], innerTop[i], innerTop[i + 1]);
+		AddQuad(innerBottom[i], innerBottom[i + 1], outerBottom[i], outerBottom[i + 1]);
+		AddQuad(outerBottom[i], outerBottom[i + 1], outerTop[i], outerTop[i + 1]);
+		AddQuad(innerTop[i], innerTop[i + 1], innerBottom[i], innerBottom[i + 1]);
+	}
+	AddQuad(outerTop[a_nSubdivisions - 1], outerTop[0], innerTop[a_nSubdivisions - 1], innerTop[0]);
+	AddQuad(innerBottom[a_nSubdivisions - 1], innerBottom[0], outerBottom[a_nSubdivisions - 1], outerBottom[0]);
+	AddQuad(outerBottom[a_nSubdivisions - 1], outerBottom[0], outerTop[a_nSubdivisions - 1], outerTop[0]);
+	AddQuad(innerTop[a_nSubdivisions - 1], innerTop[0], innerBottom[a_nSubdivisions - 1], innerBottom[0]);
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -380,15 +447,64 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 		GenerateCube(a_fRadius * 2.0f, a_v3Color);
 		return;
 	}
-	if (a_nSubdivisions > 6)
-		a_nSubdivisions = 6;
+	if (a_nSubdivisions > 360)
+		a_nSubdivisions = 360;
 
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	// the constant for finding a point on the circle.
+	const float constant = PI * 2 / a_nSubdivisions;
+	
+	std::vector< std::vector<vector3> > allPoints;
+	
+	std::vector<vector3> circlePoints;
+	
+	//find points
+	for (int i = 0; i < a_nSubdivisions; i++)
+	{
+		circlePoints.clear();
+		for (int j = 0; j < a_nSubdivisions; j++)
+		{
+			//normalize and scale
+			float x = cos(constant * j) * a_fRadius;
+			float y = sin(constant * j) * a_fRadius;
+			float z = -a_fRadius + (a_fRadius * 2 / a_nSubdivisions * i);
+			float hypotenuse = sqrtf(pow(x, 2) + pow(y, 2) + pow(z, 2));
+			x /= hypotenuse;
+			y /= hypotenuse;
+			z /= hypotenuse;
+			x *= a_fRadius;
+			y *= a_fRadius;
+			z *= a_fRadius;
+			circlePoints.push_back(vector3(x, y, z));
+		}
+		allPoints.push_back(circlePoints);
+	}
+
+	//make the sides
+	for (int j = 0; j < a_nSubdivisions - 1; j++)
+	{
+		for (int i = 0; i < a_nSubdivisions - 1; i++)
+		{
+			AddQuad(allPoints[j][i], allPoints[j][i + 1], allPoints[j + 1][i], allPoints[j + 1][i + 1]);
+		}
+		AddQuad(allPoints[j][a_nSubdivisions - 1], allPoints[j][0], allPoints[j + 1][a_nSubdivisions - 1], allPoints[j + 1][0]);
+	}
+
+	//close the sides
+	AddQuad(allPoints[a_nSubdivisions - 1][a_nSubdivisions - 1], allPoints[a_nSubdivisions - 1][0], allPoints[0][a_nSubdivisions - 1], allPoints[0][0]);
+
+	//make the top/bottom
+	for (int i = 0; i < a_nSubdivisions - 1; i++)
+	{
+		AddTri(vector3(0, 0, -a_fRadius), allPoints[0][i + 1], allPoints[0][i]);
+		AddTri(vector3(0, 0, a_fRadius), allPoints[a_nSubdivisions - 1][i], allPoints[a_nSubdivisions - 1][i + 1]);
+	}
+
+	//close the top/bottom
+	AddTri(vector3(0, 0, -a_fRadius), allPoints[0][0], allPoints[0][a_nSubdivisions - 1]);
+	AddTri(vector3(0, 0, a_fRadius), allPoints[a_nSubdivisions - 1][a_nSubdivisions - 1], allPoints[a_nSubdivisions - 1][0]);
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
