@@ -51,24 +51,46 @@ void Application::Display(void)
 	default:
 	case 1:
 		m_pCamera->ResetCamera();
+		
 		break;
 	case 2:
 		m_pCamera->ResetCamera();
+		
+		m_pCamera->SetPerspective(false);
+
 		break;
 	case 3:
 		m_pCamera->ResetCamera();
+
+		m_pCamera->SetPosition(vector3(25.0f, 0.0f, 0.0f));
+		m_pCamera->SetUp(vector3(0.0f, 0.0f, -1.0f));
+
 		break;
 	case 4:
 		m_pCamera->ResetCamera();
+
+		m_pCamera->SetPosition(vector3(0.0f, 0.0f, -15.0f));
+
 		break;
 	case 5:
 		m_pCamera->ResetCamera();
+
+		m_pCamera->SetPosition(vector3(0.0f, 0.0f, -15.0f));
+		m_pCamera->SetNearFar(vector2(8.0f, 1000.0f));
+
 		break;
 	case 6:
 		m_pCamera->ResetCamera();
+
+		m_pCamera->SetPosition(vector3(0.0f, 0.0f, -15.0f));
+		m_pCamera->SetNearFar(vector2(0.1f, 12.0f));
+
 		break;
 	case 7:
 		m_pCamera->ResetCamera();
+
+		m_pCamera->SetUp(vector3(0.0f, -1.0f, 0.0f));
+
 		break;
 	}
 

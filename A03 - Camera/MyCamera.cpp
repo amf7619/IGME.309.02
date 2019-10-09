@@ -1,5 +1,6 @@
 #include "MyCamera.h"
 using namespace Simplex;
+using namespace std;
 
 //Accessors
 void Simplex::MyCamera::SetPosition(vector3 a_v3Position) { m_v3Position = a_v3Position; }
@@ -133,6 +134,7 @@ void Simplex::MyCamera::CalculateViewMatrix(void)
 {
 	//Calculate the look at most of your assignment will be reflected in this method
 	m_m4View = glm::lookAt(m_v3Position, m_v3Target, glm::normalize(m_v3Above - m_v3Position)); //position, target, upward
+	
 }
 
 void Simplex::MyCamera::CalculateProjectionMatrix(void)
@@ -150,13 +152,42 @@ void Simplex::MyCamera::CalculateProjectionMatrix(void)
 	}
 }
 
+
+/* EDIT THESE PARTS */
+
 void MyCamera::MoveForward(float a_fDistance)
 {
-	//The following is just an example and does not take in account the forward vector (AKA view vector)
-	m_v3Position += vector3(0.0f, 0.0f,-a_fDistance);
-	m_v3Target += vector3(0.0f, 0.0f, -a_fDistance);
-	m_v3Above += vector3(0.0f, 0.0f, -a_fDistance);
+	m_v3Position += glm::normalize(vector3(m_m4View[0][2], m_m4View[1][2], m_m4View[2][2])) * -a_fDistance;
+	m_v3Target += glm::normalize(vector3(m_m4View[0][2], m_m4View[1][2], m_m4View[2][2])) * -a_fDistance;
+	m_v3Above += glm::normalize(vector3(m_m4View[0][2], m_m4View[1][2], m_m4View[2][2])) * -a_fDistance;
+
+	DisplayVectors();
 }
 
-void MyCamera::MoveVertical(float a_fDistance){}//Needs to be defined
-void MyCamera::MoveSideways(float a_fDistance){}//Needs to be defined
+void MyCamera::MoveVertical(float a_fDistance)
+{
+	m_v3Position += glm::normalize(vector3(m_m4View[0][1], m_m4View[1][1], m_m4View[2][1])) * -a_fDistance;
+	m_v3Target += glm::normalize(vector3(m_m4View[0][1], m_m4View[1][1], m_m4View[2][1])) * -a_fDistance;
+	m_v3Above += glm::normalize(vector3(m_m4View[0][1], m_m4View[1][1], m_m4View[2][1])) * -a_fDistance;
+
+	DisplayVectors();
+}
+
+void MyCamera::MoveSideways(float a_fDistance)
+{
+	m_v3Position += glm::normalize(vector3(m_m4View[0][0], m_m4View[1][0], m_m4View[2][0])) * -a_fDistance;
+	m_v3Target += glm::normalize(vector3(m_m4View[0][0], m_m4View[1][0], m_m4View[2][0])) * -a_fDistance;
+	m_v3Above += glm::normalize(vector3(m_m4View[0][0], m_m4View[1][0], m_m4View[2][0])) * -a_fDistance;
+
+	DisplayVectors();
+}
+
+void MyCamera::DisplayVectors()
+{
+	std::cout << "Position: ";
+	std::cout << "[" << m_v3Position.x << ", " << m_v3Position.y << ", " << m_v3Position.z << "] ";
+	std::cout << "Target: ";
+	std::cout << "[" << m_v3Target.x << ", " << m_v3Target.y << ", " << m_v3Target.z << "] ";
+	std::cout << "Above: ";
+	std::cout << "[" << m_v3Above.x << ", " << m_v3Above.y << ", " << m_v3Above.z << "]" << std::endl;
+}

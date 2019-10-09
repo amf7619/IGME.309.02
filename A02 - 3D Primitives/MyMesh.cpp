@@ -482,7 +482,7 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 		}
 		allPoints.push_back(circlePoints);
 	}
-
+	0
 	//make the sides
 	for (int j = 0; j < a_nSubdivisions - 1; j++)
 	{
