@@ -152,34 +152,56 @@ void Simplex::MyCamera::CalculateProjectionMatrix(void)
 	}
 }
 
-
-/* EDIT THESE PARTS */
-
 void MyCamera::MoveForward(float a_fDistance)
 {
-	m_v3Position += glm::normalize(vector3(m_m4View[0][2], m_m4View[1][2], m_m4View[2][2])) * -a_fDistance;
-	m_v3Target += glm::normalize(vector3(m_m4View[0][2], m_m4View[1][2], m_m4View[2][2])) * -a_fDistance;
-	m_v3Above += glm::normalize(vector3(m_m4View[0][2], m_m4View[1][2], m_m4View[2][2])) * -a_fDistance;
+	//calculate the forward vector of the camera view and normalize it
+	vector3 forward = glm::normalize(vector3(m_m4View[0][2], m_m4View[1][2], m_m4View[2][2]));
 
-	DisplayVectors();
+	//adjust the vectors based on that forward direction
+	m_v3Position += forward * a_fDistance;
+	m_v3Target += forward * a_fDistance;
+	m_v3Above += forward * a_fDistance;
+
+	//DisplayVectors();
 }
 
 void MyCamera::MoveVertical(float a_fDistance)
 {
-	m_v3Position += glm::normalize(vector3(m_m4View[0][1], m_m4View[1][1], m_m4View[2][1])) * -a_fDistance;
-	m_v3Target += glm::normalize(vector3(m_m4View[0][1], m_m4View[1][1], m_m4View[2][1])) * -a_fDistance;
-	m_v3Above += glm::normalize(vector3(m_m4View[0][1], m_m4View[1][1], m_m4View[2][1])) * -a_fDistance;
+	//calculate the up vector of the camera view and normalize it
+	vector3 up = glm::normalize(vector3(m_m4View[0][1], m_m4View[1][1], m_m4View[2][1]));
 
-	DisplayVectors();
+	//adjust the vectors based on that upward direction
+	m_v3Position += up * a_fDistance;
+	m_v3Target += up * a_fDistance;
+	m_v3Above += up * a_fDistance;
+
+	//DisplayVectors();
 }
 
 void MyCamera::MoveSideways(float a_fDistance)
 {
-	m_v3Position += glm::normalize(vector3(m_m4View[0][0], m_m4View[1][0], m_m4View[2][0])) * -a_fDistance;
-	m_v3Target += glm::normalize(vector3(m_m4View[0][0], m_m4View[1][0], m_m4View[2][0])) * -a_fDistance;
-	m_v3Above += glm::normalize(vector3(m_m4View[0][0], m_m4View[1][0], m_m4View[2][0])) * -a_fDistance;
+	//calculate the right vector of the camera view and normalize it
+	vector3 right = glm::normalize(vector3(m_m4View[0][0], m_m4View[1][0], m_m4View[2][0]));
 
-	DisplayVectors();
+	//adjust the vectors based on that right direction
+	m_v3Position += right * a_fDistance;
+	m_v3Target += right * a_fDistance;
+	m_v3Above += right * a_fDistance;
+
+	//DisplayVectors();
+}
+
+void MyCamera::RotateCamera(vector2 rotation)
+{
+	//find the vector for the difference between the target and the position (find the direction being looked)
+	vector3 direction = m_v3Target - m_v3Position;
+
+	//rotate the camera using the right vector and upwards vector
+	direction = glm::rotate(direction, rotation.y, vector3(m_m4View[0][1], m_m4View[1][1], m_m4View[2][1]));
+	direction = glm::rotate(direction, rotation.x, -vector3(m_m4View[0][0], m_m4View[1][0], m_m4View[2][0]));
+
+	//reposition the target
+	m_v3Target = m_v3Position + direction;
 }
 
 void MyCamera::DisplayVectors()

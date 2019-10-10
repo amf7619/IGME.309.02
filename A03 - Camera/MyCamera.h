@@ -230,7 +230,17 @@ public:
 	OUTPUT: ---
 	*/
 	void MoveSideways(float a_fDistance = 0.1f);
-
+	/*
+	USAGE: Rotate the camera to view different directions
+	ARGUMENTS: vector2 with the angle horizontally and vertically in radians
+	OUTPUT: ---
+	*/
+	void RotateCamera(vector2 rotation = vector2(0.0f, 0.0f));
+	/*
+	USAGE: Display camera vectors in the console
+	ARGUMENTS: ---
+	OUTPUT: ---
+	*/
 	void DisplayVectors();
 };
 
