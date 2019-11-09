@@ -276,16 +276,140 @@ void MyRigidBody::AddToRenderList(void)
 
 uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 {
-	/*
-	Your code goes here instead of this comment;
 
-	For this method, if there is an axis that separates the two objects
-	then the return will be different than 0; 1 for any separating axis
-	is ok if you are not going for the extra credit, if you could not
-	find a separating axis you need to return 0, there is an enum in
-	Simplex that might help you [eSATResults] feel free to use it.
-	(eSATResults::SAT_NONE has a value of 0)
-	*/
+	matrix3 orientation = m_m4ToWorld;
+	matrix3 otherOrientation = a_pOther->m_m4ToWorld;
+	matrix3 rMatrix;
+	matrix3 rotationMatrix;
+
+	//find the rotations of the rigidbodies
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			rMatrix[i][j] = glm::dot(orientation[i], otherOrientation[j]);
+			rotationMatrix[i][j] = abs(rMatrix[i][j]) + glm::epsilon<float>();
+		}
+	}
+
+	vector3 translation = a_pOther->GetCenterGlobal() - GetCenterGlobal();
+	translation = vector3(glm::dot(translation, orientation[0]), glm::dot(translation, orientation[1]), glm::dot(translation, orientation[2]));
+
+	//Check the planes along the body's axes
+	for (int i = 0; i < 3; i++)
+	{
+		float radius = m_v3HalfWidth[i];
+		vector3 oHalfW = a_pOther->m_v3HalfWidth;
+		float otherRadius = oHalfW.x * rotationMatrix[i][0] + oHalfW.y * rotationMatrix[i][1] + oHalfW.z * rotationMatrix[i][2];
+
+		if (abs(translation[i]) > radius + otherRadius)
+		{
+			switch (i)
+			{
+			case 0:
+				return eSATResults::SAT_AX;
+			case 1:
+				return eSATResults::SAT_AY;
+			case 2:
+				return eSATResults::SAT_AZ;
+			}
+		}
+	}
+
+	//Check the planes along the other body's axes
+	for (int i = 0; i < 3; i++)
+	{
+		float radius = m_v3HalfWidth.x * rotationMatrix[0][i] + m_v3HalfWidth.y * rotationMatrix[1][i] + m_v3HalfWidth.z * rotationMatrix[2][i];
+		float otherRadius = a_pOther->m_v3HalfWidth[i];
+
+		if (abs(translation[0] * rMatrix[0][i] + translation[1] * rMatrix[1][i] + translation[2] * rMatrix[2][i]) > radius + otherRadius)
+		{
+			switch (i)
+			{
+			case 0:
+				return eSATResults::SAT_BX;
+			case 1:
+				return eSATResults::SAT_BY;
+			case 2:
+				return eSATResults::SAT_BZ;
+			}
+		}
+	}
+
+	//Check AxBx
+	vector3 oHalfW = a_pOther->m_v3HalfWidth;
+	float radius = m_v3HalfWidth.y * rotationMatrix[2][0] + m_v3HalfWidth.z * rotationMatrix[1][0];
+	float otherRadius = oHalfW.y * rotationMatrix[0][2] + oHalfW.z * rotationMatrix[0][1];
+
+	if (abs(translation.z * rMatrix[1][0] - translation.y * rMatrix[2][0]) > radius + otherRadius) {
+		return eSATResults::SAT_AXxBX;
+	}
+
+	//Check AxBy
+	radius = m_v3HalfWidth.y * rotationMatrix[2][1] + m_v3HalfWidth.z * rotationMatrix[1][1];
+	otherRadius = oHalfW.x * rotationMatrix[0][2] + oHalfW.z * rotationMatrix[0][1];
+
+	if (abs(translation.z * rMatrix[1][1] - translation.y * rMatrix[2][1]) > radius + otherRadius) {
+		return eSATResults::SAT_AXxBY;
+	}
+
+	//Check AxBz
+	radius = m_v3HalfWidth.y * rotationMatrix[2][2] + m_v3HalfWidth.z * rotationMatrix[1][2];
+	otherRadius = oHalfW.x * rotationMatrix[0][1] + oHalfW.y * rotationMatrix[0][0];
+
+	if (abs(translation.z * rMatrix[1][2] - translation.y * rMatrix[2][2]) > radius + otherRadius) {
+		return eSATResults::SAT_AXxBZ;
+	}
+
+	//Check AyBx
+	radius = m_v3HalfWidth.x * rotationMatrix[2][0] + m_v3HalfWidth.z * rotationMatrix[0][0];
+	otherRadius = oHalfW.y * rotationMatrix[1][2] + oHalfW.z * rotationMatrix[1][1];
+
+	if (abs(translation.x * rMatrix[2][0] - translation.z * rMatrix[0][0]) > radius + otherRadius) {
+		return eSATResults::SAT_AYxBX;
+	}
+
+	//Check AyBy
+	radius = m_v3HalfWidth.x * rotationMatrix[2][1] + m_v3HalfWidth.z * rotationMatrix[0][1];
+	otherRadius = oHalfW.x * rotationMatrix[1][2] + oHalfW.z * rotationMatrix[1][0];
+
+	if (abs(translation.x * rMatrix[2][1] - translation.z * rMatrix[0][1]) > radius + otherRadius) {
+		return eSATResults::SAT_AYxBY;
+	}
+
+	//Check AyBz
+	radius = m_v3HalfWidth.x * rotationMatrix[2][2] + m_v3HalfWidth.z * rotationMatrix[0][2];
+	otherRadius = oHalfW.x * rotationMatrix[1][1] + oHalfW.y * rotationMatrix[1][0];
+
+	if (abs(translation.x * rMatrix[2][2] - translation.z * rMatrix[0][2]) > radius + otherRadius) {
+		return eSATResults::SAT_AYxBZ;
+	}
+
+	//Check AzBx
+	radius = m_v3HalfWidth.x * rotationMatrix[1][0] + m_v3HalfWidth.y * rotationMatrix[0][0];
+	otherRadius = oHalfW.y * rotationMatrix[2][2] + oHalfW.z * rotationMatrix[2][1];
+
+	if (abs(translation.y * rMatrix[0][0] - translation.x * rMatrix[1][0]) > radius + otherRadius) {
+		return eSATResults::SAT_AZxBX;
+	}
+
+	//Check AzBy
+	radius = m_v3HalfWidth.x * rotationMatrix[1][1] + m_v3HalfWidth.y * rotationMatrix[0][1];
+	otherRadius = oHalfW.x * rotationMatrix[2][2] + oHalfW.z * rotationMatrix[2][0];
+
+	
+	if (abs(translation.y * rMatrix[0][1] - translation.x * rMatrix[1][1]) > radius + otherRadius) {
+		return eSATResults::SAT_AZxBY;
+	}
+	
+
+	//Check AzBz
+	radius = m_v3HalfWidth.x * rotationMatrix[1][2] + m_v3HalfWidth.y * rotationMatrix[0][2];
+	otherRadius = oHalfW.x * rotationMatrix[2][1] + oHalfW.y * rotationMatrix[2][0];
+
+	if (abs(translation.y * rMatrix[0][2] - translation.x * rMatrix[1][2]) > radius + otherRadius) {
+		return eSATResults::SAT_AZxBZ;
+	}
 
 	//there is no axis test that separates this two objects
 	return eSATResults::SAT_NONE;

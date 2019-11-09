@@ -247,6 +247,14 @@ private:
 	OUTPUT: 0 for colliding, other = first axis that succeeds test
 	*/
 	uint SAT(MyRigidBody* const a_pOther);
+	/*
+	USAGE: This will take the other rigidbody and this rigidbody and project
+		them onto the plane.
+	ARGUMENTS: MyRigidBody* const a_pOther -> other rigid body to test against
+			   vector3 plane -> the plane to project onto
+	OUTPUT: true if the bodies are separated by the plane, false if not
+	*/
+	bool isSeparating(MyRigidBody* const a_pOther, vector3 plane);
 };//class
 
 } //namespace Simplex
